@@ -2,25 +2,48 @@
 Introducing "Proof of use" concept aiming to lower transaction cost by rewarding the transaction sender with 0xcate tokens.
 
 # Tools we need to develop and unit test
-*truffle framework
-*ganache-cli for local blockchain testing
-*nodejs
-*npm
+-truffle framework\
+-ganache-cli for local blockchain testing\
+-nodejs\
+-npm\
 Note: check package.json file for dependencies.
+
+# To test web server on local PC, install dependencies and run with lite-server:
+1. install nodejs dependencies only the first time
+```
+ npm install
+```
+2. Run web server on local PC in development mode
+```
+ npm run dev
+```
+Note: Default web browser will open a tab with website on localhost:3000
 
 # Steps for setup
 1. Install truffle module
+ ```
  npm install truffle [--save-dev]
- 2. Install ganache-cli for local blockchain testing
+ ```
+2. Install ganache-cli for local blockchain testing
+  ```
   npm install ganache-cli
-2. truffle init
- Go to project folder for this.
-3. have truffle.js file renamed to truffle-config.js and edit this file as you need.
+  ```
+3. Go to project folder to init a new truffle project
+ ```
+ truffle init
+ ```
+4. have truffle.js file renamed to truffle-config.js and edit this file as you need.
 
 # Steps to use when developing and testing
 1. Compile:
-	truffle compile [--all]
+ ```
+ truffle compile [--all]
+ ```
 2. Migrate contract to local blockchain:
-	truffle migrate --reset
+ ```
+ truffle migrate --reset
+ ```
 3. run unit test scripts (javascript unit testing):
-	truffle test [specific_file]
+ ```
+ truffle test [specific_file]
+ ```
