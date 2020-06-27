@@ -102,8 +102,7 @@ contract _0xCatetherToken is ERC20Interface, EIP918Interface, ApproveAndCallFall
         
         challengeNumber = bytes32(0x781504f93328a5bf6401754a85baab350e71a11d9051cc86a8ff6f9ebcf38477); //challengeNumber from deprecated contract on the main network
         targetForEpoch[(epochCount - 1)] = _MAXIMUM_TARGET;
-        solutionForChallenge[challengeNumber] = "42"; // ahah yes
-		timeStampForEpoch[(epochCount - 1)] = block.timestamp;
+        timeStampForEpoch[(epochCount - 1)] = block.timestamp;
         latestDifficultyPeriodStarted = block.number;
         
         targetForEpoch[epochCount] = _MAXIMUM_TARGET;

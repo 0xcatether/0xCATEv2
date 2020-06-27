@@ -125,11 +125,82 @@ contract _0xCatetherToken_mock is _0xCatetherToken
 		return true;
 	}
 	
+	function mint_opt(address sender, uint256 nonce, bytes32 challenge_digest) public whenMiningEnabled returns (bool success) {
+		
+        //the PoW must contain work that includes a recent ethereum block hash (challenge number) and the msg.sender's address to prevent MITM attacks
+        //bytes32 digest =  keccak256(abi.encodePacked(challengeNumber, msg.sender, nonce));
+		bytes32 digest =  keccak256(abi.encodePacked(challengeNumber, sender, nonce));
+        
+		//the challenge digest must match the expected
+        require(digest == challenge_digest, "challenge_digest error");
+		
+        //the digest must be smaller than the target
+        require(uint256(digest) <= miningTarget, "miningTarget error");
+        
+		//only allow one reward for each challenge
+		bytes32 solution = solutionForChallenge[challengeNumber]; /// bug fix, 'challengeNumber' instead of 'challenge_digest'
+        solutionForChallenge[challengeNumber] = digest;
+        require(solution == 0x0, "solution exists");  //prevent the same answer from awarding twice
+        
+		uint reward_amount = getMiningReward();
+        //balances[msg.sender] = balances[msg.sender].add(reward_amount);
+		balances[sender] = balances[sender].add(reward_amount);
+        _totalSupply = _totalSupply.add(reward_amount);
+		tokensMinted = tokensMinted.add(reward_amount);
+		
+        //set readonly diagnostics data
+        //lastRewardTo = msg.sender;
+		lastRewardTo = sender;
+        lastRewardAmount = reward_amount;
+        lastRewardEthBlockNumber = block.number;
+        
+		_startNewMiningEpochOpt();
+        //emit Mint(msg.sender, reward_amount, epochCount, challengeNumber);
+		emit Mint(sender, reward_amount, epochCount, challengeNumber);
+		return true;
+    }
+
+    //a new 'block' to be mined
+    function _startNewMiningEpochOpt() internal {
+		
+		timeStampForEpoch[epochCount] = block.timestamp;
+        epochCount = epochCount.add(1);
+		
+		//Difficulty adjustment following the DigiChieldv3 implementation (Tempered-SMA)
+		// Allows more thorough protection against multi-pool hash attacks
+		// https://github.com/zawy12/difficulty-algorithms/issues/9
+		miningTarget = _reAdjustDifficultyOpt(epochCount);
+		
+		//make the latest ethereum block hash a part of the next challenge for PoW to prevent pre-mining future blocks
+		//do this last since this is a protection mechanism in the mint() function
+		challengeNumber = blockhash(block.number.sub(1));
+    }
 	
 	
 	uint private timeTarget = 300;  // We want miners to spend 5 minutes to mine each 'block'
 	uint private N = 6180;          // N = 1000*n, ratio between timeTarget and windowTime (31-ish minutes)
 									// (Ethereum doesn't handle floating point numbers very well)
+	
+	function _reAdjustDifficultyOpt(uint epoch) internal returns (uint) {
+		
+        uint elapsedTime = timeStampForEpoch[epoch.sub(1)].sub(timeStampForEpoch[epoch.sub(2)]); // will revert if current timestamp is smaller than the previous one
+        
+		uint s1 = uint(5180).add(elapsedTime.mul(1042).div(timeTarget));
+		//uint s2 = uint(5180).add(s1); //N.sub(1000).add(s1);
+		
+		uint s3 = uint(24225600).div(s1).add(N); // (6180 * 3920).div(s2).add(N) = N.mul(3920).div(s2).add(N);
+		
+		targetForEpoch[epoch] = (targetForEpoch[epoch.sub(1)].mul(10000)).div(s3);
+		
+        latestDifficultyPeriodStarted = block.number;
+		
+		targetForEpoch[epoch] = adjustTargetInBounds(targetForEpoch[epoch]);
+		
+		return targetForEpoch[epoch];
+    }
+	
+	
+	
 	function _reAdjustDifficulty_public(uint epoch) public returns (uint) {
 		
         uint elapsedTime = timeStampForEpoch[epoch.sub(1)].sub(timeStampForEpoch[epoch.sub(2)]); // will revert if current timestamp is smaller than the previous one
