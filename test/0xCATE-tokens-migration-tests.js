@@ -74,7 +74,55 @@ contract("0xCATE tests", async accounts => {
 		/// contractOwner is the deployer of old contract and the owner of the tokens given to him in contructor
 		/// contractOwner is approving new contract to take his tokens on his behalf from old/deprecated contract and give him new tokens in new contract
 		/// the new contract will be the owner and have the old tokens in deprecated contract
-		let tx = await tokenInstance.approveAndCall( newContractAddress, migrateTokens, no_bytes_data, {from: contractOwner});
+		//let tx = await tokenInstance.approveAndCall( newContractAddress, migrateTokens, no_bytes_data, {from: contractOwner});
+		
+		
+		
+		/// wait for x confirmations on the network before accepting the transaction.
+		/// this does not work with metamask
+		let reqConfirmations = 5;
+		let promise1 = new Promise((resolve, reject) => {
+			let tx_receipt;
+			
+			tokenInstance.approveAndCall(newContractAddress, migrateTokens, no_bytes_data, {from: contractOwner})
+			.on('transactionHash', function(hash) {
+				console.log('tokenInstance.approveAndCall transactionHash: ' + hash);
+			})
+			.on('receipt', function(receipt) {
+				console.log('tokenInstance.approveAndCall receipt >>');
+				console.log('receipt: ' + JSON.stringify(receipt));
+				tx_receipt = receipt;
+			})
+			.on('confirmation', function(confirmationNumber, receipt) {
+				console.log('tokenInstance.approveAndCall confirmation >>');
+				console.log('confirmationNumber: ' + confirmationNumber);
+				if (confirmationNumber === reqConfirmations) {
+					console.log('receipt: ' + JSON.stringify(receipt));
+					resolve(tx_receipt);
+				}
+			})
+			.on('error', function(err) {
+				console.log('tokenInstance.approveAndCall err: ' + err.toString());
+				reject(err);
+			});
+		});
+		
+		/// this is code for metamask, 'res' is transaction hash
+		/*let promise1 = new Promise((resolve, reject) => {
+			tokenInstance.approveAndCall(newContractAddress, migrateTokens, no_bytes_data, {from: contractOwner},
+			(err, res) => {
+				if (err) {
+					var err1 = "tokenInstance.approveAndCall(" + newContractAddress + ", " + migrateTokens + ") ERROR: " + JSON.stringify(err);
+					console.log(err1);
+					reject(err1);
+				}
+				resolve(res);
+			});
+		});*/
+		
+		let tx = await promise1;
+		//console.log("***promise1 return >> " + JSON.stringify(tx));
+		
 		
 		// check for emitted event 'MigratedTokens(address indexed user, uint tokens)'
 		console.log("***tx.logs " + "[" + tx.logs.length + "]" + " >> \n" + JSON.stringify(tx.logs));
