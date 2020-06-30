@@ -47,3 +47,14 @@ Note: Default web browser will open a tab with website on localhost:3000
  ```
  truffle test [specific_file]
  ```
+
+# Optional tools
+ truffle-flattener is useful when having multiple inheritance contracts and we want to flatten contracts into a single file for deployment or just verify contract code on etherscan with a single file.\
+1. Install truffle-flattener:
+ ```
+ npm install -g truffle-flattener
+ ```
+2. How to use:
+ ```
+ truffle-flattener MyContract.sol > MyContract_flattened.sol
+ ```
