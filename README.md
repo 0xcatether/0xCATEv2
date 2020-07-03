@@ -22,11 +22,12 @@ Note: Default web browser will open a tab with website on localhost:3000
 # Steps for setup
 1. Install truffle module
  ```
- npm install truffle [--save-dev]
+ npm install -g truffle [--save-dev]
  ```
-2. Install ganache-cli for local blockchain testing
+2. Install [ganache](http://truffleframework.com/ganache/) for local blockchain testing
+  or install package via npm command
   ```
-  npm install ganache-cli
+  npm install -g ganache-cli
   ```
 3. Go to project folder to init a new truffle project
  ```
