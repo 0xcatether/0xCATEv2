@@ -59,3 +59,6 @@ Note: Default web browser will open a tab with website on localhost:3000
  ```
  truffle-flattener MyContract.sol > MyContract_flattened.sol
  ```
+
+# License
+This project is licensed under the terms of the MIT license.
